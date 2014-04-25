@@ -30,6 +30,8 @@ func main() {
 	fmt.Println(l.ListDevicesByName(true))
 
 	fmt.Println(l.IsComServerInLab("ComServer4"))
-
 	fmt.Println(l.GetComServerByName("ComServer1"))
+
+	fmt.Println(l.IsDeviceInLab("P1R1"))
+	fmt.Println(l.GetDeviceByName("P1R1"))
 }

@@ -57,7 +57,7 @@ func (l Lab) ListDevicesByName(sorted bool) []string {
 	return list
 }
 
-// Checks wether the ComServer exists (lookup by name)
+// Checks whether or not the ComServer exists (lookup by name)
 func (l *Lab) IsComServerInLab(name string) bool {
 	for _, v := range l.ListComServersByName(false) {
 		if v == name {
@@ -67,10 +67,32 @@ func (l *Lab) IsComServerInLab(name string) bool {
 	return false
 }
 
-// Returns the pointer corresponding to the goven comserver name
+// Checks whether or not the device exists (lookup by name)
+func (l *Lab) IsDeviceInLab(name string) bool {
+	for _, v := range l.ListDevicesByName(false) {
+		if v == name {
+			return true
+		}
+	}
+	return false
+}
+
+// Returns the pointer corresponding to the given comserver name
 func (l *Lab) GetComServerByName(name string) *devices.ComServer {
 	if l.IsComServerInLab(name) {
 		for _, v := range l.labComServers {
+			if v.GetName() == name {
+				return v
+			}
+		}
+	}
+	return nil
+}
+
+// Returns the pointer corresponding to the given device name
+func (l *Lab) GetDeviceByName(name string) *devices.LabDevice {
+	if l.IsDeviceInLab(name) {
+		for _, v := range l.labDevices {
 			if v.GetName() == name {
 				return v
 			}

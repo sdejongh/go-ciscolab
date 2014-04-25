@@ -2,6 +2,7 @@ package lab
 
 import (
 	"ciscolab/devices"
+	"ciscolab/utilities"
 	"sort"
 )
 
@@ -11,37 +12,52 @@ type Lab struct {
 	labDevices    []*devices.LabDevice
 }
 
-// Type for sorted list of comservers by name
-type LabComServersByName []string
+// Returns number of comservers already added
+func (l Lab) GetComServersCount() int { return len(l.labComServers) }
 
-// Returns number of comservers in slice (needed for sort.Sort)
-func (n LabComServersByName) Len() int { return len(n) }
-
-// Swaps two comservers in slice (needed for sort.Sort)
-func (n LabComServersByName) Swap(i, j int) { n[i], n[j] = n[j], n[i] }
-
-// checks which Comserver name is lesser than the other one (needed for sort.Sort)
-func (n LabComServersByName) Less(i, j int) bool { return n[i] < n[j] }
+// Returns number of devices already added
+func (l Lab) GetDevicesCount() int { return len(l.labDevices) }
 
 // Adds *ComServer's to the slice
 func (l *Lab) AddComServer(d ...*devices.ComServer) {
 	l.labComServers = append(l.labComServers, d...)
 }
 
-// Returns a slice containing ComServers name
+// Adds *Device's to the slice
+func (l *Lab) AddDevice(d ...*devices.LabDevice) {
+	l.labDevices = append(l.labDevices, d...)
+}
+
+// Returns a slice containing ComServers name, sorted or not.
 func (l Lab) ListComServersByName(sorted bool) []string {
-	nComServers := len(l.labComServers)
+	nComServers := l.GetComServersCount()
 	list := make([]string, nComServers)
 
 	for i, v := range l.labComServers {
 		list[i] = v.GetName()
 	}
+
 	if sorted {
-		sort.Sort(LabComServersByName(list))
+		sort.Sort(utilities.StringsByName(list))
 	}
 
 	return list
+}
 
+// Returns a slice containing Devices name, sorted or not
+func (l Lab) ListDevicesByName(sorted bool) []string {
+	nDevices := l.GetDevicesCount()
+	list := make([]string, nDevices)
+
+	for i, v := range l.labDevices {
+		list[i] = v.GetName()
+	}
+
+	if sorted {
+		sort.Sort(utilities.StringsByName(list))
+	}
+
+	return list
 }
 
 // Lab type constructor

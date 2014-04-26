@@ -17,7 +17,7 @@ func main() {
 	d2 := devices.NewLabDevice("P1R3", 35, c)
 	d3 := devices.NewLabDevice("P1R2", 34, c2)
 
-	l := lab.NewLab(3, 48)
+	l := lab.NewLab()
 	l.AddComServer(c, c2, c3)
 	l.AddDevice(d, d2, d3)
 

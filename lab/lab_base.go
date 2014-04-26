@@ -11,13 +11,13 @@ import (
 
 // Lab structure, contains slices for devices and comservers
 type Lab struct {
-	labComServers []*devices.ComServer
-	labDevices    []*devices.LabDevice
+	labComServers map[string]*devices.ComServer
+	labDevices    map[string]*devices.LabDevice
 }
 
 // Lab type constructor
-func NewLab(maxComServers int16, maxDevices int16) *Lab {
-	comservers := make([]*devices.ComServer, 0, maxComServers)
-	devices := make([]*devices.LabDevice, 0, maxDevices)
+func NewLab() *Lab {
+	comservers := make(map[string]*devices.ComServer)
+	devices := make(map[string]*devices.LabDevice)
 	return &Lab{labComServers: comservers, labDevices: devices}
 }

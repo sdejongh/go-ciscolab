@@ -8,7 +8,6 @@ package lab
 import (
 	"ciscolab/devices"
 	"ciscolab/utilities"
-	"reflect"
 	"sort"
 )
 
@@ -41,9 +40,7 @@ func (l *Lab) RemoveDevice(name string) {
 func (l Lab) GetComServerNames(sorted bool) []string {
 	names := make([]string, len(l.devices))
 	for _, d := range l.devices {
-		v := reflect.TypeOf(d).Elem()
-		dummyComServer := devices.ComServer{}
-		if v == reflect.TypeOf(dummyComServer) {
+		if d.GetType() == devices.COMSERVER {
 			names = append(names, d.GetName())
 		}
 	}
@@ -57,9 +54,7 @@ func (l Lab) GetComServerNames(sorted bool) []string {
 func (l Lab) GetLabDeviceNames(sorted bool) []string {
 	names := make([]string, len(l.devices))
 	for _, d := range l.devices {
-		v := reflect.TypeOf(d).Elem()
-		dummyLabDevice := devices.LabDevice{}
-		if v == reflect.TypeOf(dummyLabDevice) {
+		if d.GetType() == devices.LABDEVICE {
 			names = append(names, d.GetName())
 		}
 	}

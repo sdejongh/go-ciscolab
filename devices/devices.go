@@ -4,12 +4,21 @@ import (
 	"net"
 )
 
+const (
+	LABDEVICE DeviceType = iota
+	COMSERVER DeviceType = iota
+)
+
 /* TYPE DEFINITIONS */
+
+// Type of device, ComServer or LabDevice
+type DeviceType int
 
 // Generic Device Interface
 type Devicer interface {
 	GetName() string
 	SetName(name string)
+	GetType() DeviceType
 }
 
 // ComServer Device
@@ -36,6 +45,11 @@ func (c *ComServer) SetName(name string) {
 // Returns the name of the Comserver
 func (c ComServer) GetName() string {
 	return c.name
+}
+
+// Returns ComServer Type
+func (d ComServer) GetType() DeviceType {
+	return COMSERVER
 }
 
 // Sets the IP address of the Comserver
@@ -80,6 +94,11 @@ func (d *LabDevice) SetName(name string) {
 // Returns the name of the LavDevice
 func (d LabDevice) GetName() string {
 	return d.name
+}
+
+// Returns LabDevice Type
+func (d LabDevice) GetType() DeviceType {
+	return LABDEVICE
 }
 
 // Sets the comserver to which the LabDevice is connected through console port

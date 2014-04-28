@@ -18,20 +18,18 @@ func main() {
 	d3 := devices.NewLabDevice("P1R2", 34, c2)
 
 	l := lab.NewLab()
-	l.AddComServer(c, c2, c3)
-	l.AddDevice(d, d2, d3)
+	l.AddDevice(d, d2, d3, c, c2, c3)
+	l.RemoveDevice("P1R2")
 
 	fmt.Println("CiscoLab GO version")
 
 	fmt.Println(c.GetName(), "->", c.GetIpAddress(), ":", c.GetTelnetPort())
 	fmt.Println(d.GetName(), "->", d.GetComServer().GetName(), ":", d.GetComServer().GetIpAddress(), ":", 2000+d.GetLine())
 
-	fmt.Println(l.ListComServersByName(true))
-	fmt.Println(l.ListDevicesByName(true))
+	fmt.Println("Is P1R1 in lab ?", l.IsDeviceInLab("P1R1"))
 
-	fmt.Println(l.IsComServerInLab("ComServer4"))
-	fmt.Println(l.GetComServerByName("ComServer1"))
+	fmt.Println(l.GetComServerNames(true))
+	fmt.Println(l.GetLabDeviceNames(true))
 
-	fmt.Println(l.IsDeviceInLab("P1R1"))
-	fmt.Println(l.GetDeviceByName("P1R1"))
+	fmt.Println("P1R1 is at", l.GetDeviceByName("P1R1"))
 }

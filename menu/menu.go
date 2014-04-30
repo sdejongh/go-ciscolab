@@ -11,6 +11,7 @@ const (
 	CHAR_HLINE                    = "-"
 	CHAR_VLINE                    = "|"
 	CHAR_SEPARATOR                = "-"
+	CHAR_EMPTY                    = " "
 	TXTALIGN_LEFT   TextAlignment = iota
 	TXTALIGN_CENTER TextAlignment = iota
 	TXTALIGN_RIGHT  TextAlignment = iota
@@ -39,6 +40,12 @@ type TextLine struct {
 	content string
 	align   TextAlignment
 }
+
+// Separator line definition
+type SeparatorLine string
+
+// Empty line definition
+type EmptyLine string
 
 // Menu type definition
 type Menu struct {
@@ -138,4 +145,38 @@ func (t CommandLine) GetLength() int {
 // Returns CommandLine text alignment
 func (t CommandLine) GetAlignment() TextAlignment {
 	return t.align
+}
+
+/* SEPARATOR LINE RELATED FUNCTIONS */
+
+// Returns a single separator character
+func (s SeparatorLine) GetText() string {
+	return CHAR_HLINE
+}
+
+// Returns 1 (length of a single char)
+func (s SeparatorLine) GetLength() int {
+	return 1
+}
+
+// Returns TXTALIGN_CENTER, Separtor line will always fill the width of the menu
+func (s SeparatorLine) GetAlignment() TextAlignment {
+	return TXTALIGN_CENTER
+}
+
+/* EMPTY LINE RELATED FUNCTIONS */
+
+// Returns a single space character
+func (e EmptyLine) GetText() string {
+	return CHAR_EMPTY
+}
+
+// Returns 1 (length of a single char)
+func (e EmptyLine) GetLength() int {
+	return 1
+}
+
+// Returns TXTALIGN_CENTER, empty line will always fill the width of the menu
+func (e EmptyLine) GetAlignment() TextAlignment {
+	return TXTALIGN_CENTER
 }

@@ -17,6 +17,7 @@ const (
 	LINETYPE_SEPARATOR LineType      = iota
 	LINETYPE_EMPTY     LineType      = iota
 	LINETYPE_TITLE     LineType      = iota
+	LINETYPE_PROMPT    LineType      = iota
 	CHAR_CORNER                      = "+"
 	CHAR_HLINE                       = "-"
 	CHAR_VLINE                       = "|"
@@ -36,46 +37,18 @@ type LineType int
 // Text alignment type definition (center/left/right)
 type TextAlignment int
 
-// MenuCommand type
-type MenuCommand struct {
-	key int
-	f   func()
-}
-
 // Generic menu line definition
-type MenuLine interface {
-	GetText() string
-	GetLength() int
-	GetAlignment() TextAlignment
-	GetType() LineType
+type MenuLine struct {
+	text     string
+	align    TextAlignment
+	linetype LineType
 }
-
-// Command line definition
-type CommandLine struct {
-	text    string
-	command MenuCommand
-	align   TextAlignment
-}
-
-// Simple text line definition
-type TextLine struct {
-	content string
-	align   TextAlignment
-}
-
-// Title line definition
-type TitleLine string
-
-// Separator line definition
-type SeparatorLine string
-
-// Empty line definition
-type EmptyLine string
 
 // Menu type definition
 type Menu struct {
 	content   []MenuLine
-	commands  map[int]CommandLine
+	commands  map[int]func()
+	prompt    MenuLine
 	width     int
 	border    bool
 	padding_x int
@@ -89,17 +62,18 @@ type Menu struct {
 /**************************/
 
 // Menu Type constructor
-func NewMenu(title string, border bool, padding_x int, padding_y int, margin_x int, margin_y int) *Menu {
+func NewMenu(title string, prompt string, border bool, padding_x int, padding_y int, margin_x int, margin_y int) *Menu {
 	menu := Menu{width: 0, border: border, padding_x: padding_x, padding_y: padding_y, margin_x: margin_x, margin_y: margin_y}
 	menu.SetTitle(title)
-	menu.commands = make(map[int]CommandLine)
+	menu.SetPrompt(prompt)
+	menu.commands = make(map[int]func())
 	return &menu
 }
 
 // Prints the menu to the standard output
 func (m Menu) Display() {
 	menuWidth := m.GetWidth()
-	var emptyLine EmptyLine
+	emptyLine := MenuLine{text: CHAR_EMPTY, align: TXTALIGN_CENTER, linetype: LINETYPE_EMPTY}
 	hline := strings.Repeat(CHAR_EMPTY, m.margin_x) + CHAR_CORNER + strings.Repeat(CHAR_HLINE, menuWidth) + CHAR_CORNER
 
 	// Print Vertical margin
@@ -142,8 +116,14 @@ func (m Menu) Display() {
 	// Print menu bottom border if needed
 	if m.border {
 		fmt.Println(hline)
+		// Prints vertical padding (space between border and prompt)
 	}
 
+	for i := 0; i < m.GetPaddingY(); i++ {
+		fmt.Println(CHAR_EMPTY)
+	}
+	// Print prompt
+	fmt.Print(m.FormatString(m.GetPrompt()))
 }
 
 // Returns formated string including padding, border etc...
@@ -151,6 +131,17 @@ func (m Menu) FormatString(line MenuLine) string {
 	menuWidth := m.GetWidth()
 	emptyChars := menuWidth - line.GetLength()
 	formatedString := ""
+
+	if line.GetType() == LINETYPE_PROMPT {
+		formatedString += strings.Repeat(CHAR_EMPTY, m.margin_x)
+		if m.border {
+			formatedString += CHAR_EMPTY
+		}
+		formatedString += strings.Repeat(CHAR_EMPTY, m.padding_x)
+		formatedString += line.GetText()
+		return formatedString
+	}
+
 	switch line.GetAlignment() {
 	case TXTALIGN_LEFT:
 		formatedString = strings.Repeat(CHAR_EMPTY, m.padding_x) + line.GetText() + strings.Repeat(CHAR_EMPTY, emptyChars-m.padding_x)
@@ -225,153 +216,66 @@ func (m *Menu) SetMarginY(y int) {
 	m.margin_y = y
 }
 
+// Returns prompt of the Menu
+func (m Menu) GetPrompt() MenuLine {
+	return m.prompt
+}
+
+/**********************************/
+/* MENU CONTENT RELATED FUNCTIONS */
+/**********************************/
+
 // Set TitleLine of the Menu
 func (m *Menu) SetTitle(title string) {
-	newline := TitleLine(title)
+	newline := MenuLine{text: title, align: TXTALIGN_CENTER, linetype: LINETYPE_TITLE}
 	m.content = append(m.content, newline)
+}
+
+// Set prompt of the Menu
+func (m *Menu) SetPrompt(prompt string) {
+	m.prompt = MenuLine{text: prompt, align: TXTALIGN_LEFT, linetype: LINETYPE_PROMPT}
 }
 
 // Add a TextLine to the Menu
 func (m *Menu) AddTextLine(text string, align TextAlignment) {
-	newline := TextLine{content: text, align: align}
+	newline := MenuLine{text: text, align: align, linetype: LINETYPE_TEXT}
 	m.content = append(m.content, newline)
 }
 
 // Add a blank line to the Menu
 func (m *Menu) AddEmptyLine() {
-	var newline EmptyLine
+	newline := MenuLine{text: CHAR_EMPTY, align: TXTALIGN_CENTER, linetype: LINETYPE_EMPTY}
 	m.content = append(m.content, newline)
 }
 
 // Add a command line to the Menu
 func (m *Menu) AddCommandLine(key int, text string, command func(), align TextAlignment) {
-	newcmd := MenuCommand{key: key, f: command}
-	newline := CommandLine{text: text, command: newcmd, align: align}
+	m.commands[key] = command
+	text = fmt.Sprintf("%d %s %s", key, CHAR_SEPARATOR, text)
+	newline := MenuLine{text: text, align: align, linetype: LINETYPE_COMMAND}
 	m.content = append(m.content, newline)
-	m.commands[key] = newline
 }
 
 /******************************/
-/* TEXTLINE RELATED FUNCTIONS */
+/* MENULINE RELATED FUNCTIONS */
 /******************************/
 
-// Returns LineType LINETYPE_TEXT
-func (t TextLine) GetType() LineType {
-	return LINETYPE_TEXT
+// Returns MenuLine type
+func (l MenuLine) GetType() LineType {
+	return l.linetype
 }
 
 // Returns TextLine text content
-func (t TextLine) GetText() string {
-	return t.content
+func (l MenuLine) GetText() string {
+	return l.text
 }
 
 // Returns TextLine Alignment
-func (t TextLine) GetAlignment() TextAlignment {
-	return t.align
+func (l MenuLine) GetAlignment() TextAlignment {
+	return l.align
 }
 
 // Returns Textline text length
-func (t TextLine) GetLength() int {
-	return len(t.content)
-}
-
-/*******************************/
-/* TITLELINE RELATED FUNCTIONS */
-/*******************************/
-
-// Returns LineType LINETYPE_TITLE
-func (t TitleLine) GetType() LineType {
-	return LINETYPE_TITLE
-}
-
-// Returns TitleLine text content
-func (t TitleLine) GetText() string {
-	return string(t)
-}
-
-// Returns TitleLine Alignment
-func (t TitleLine) GetAlignment() TextAlignment {
-	return TXTALIGN_CENTER
-}
-
-// Returns Textline text length
-func (t TitleLine) GetLength() int {
-	return len(t)
-}
-
-/*********************************/
-/* COMMANDLINE RELATED FUNCTIONS */
-/*********************************/
-
-// Returns LineType LINETYPE_COMMAND
-func (c CommandLine) GetType() LineType {
-	return LINETYPE_COMMAND
-}
-
-// Returns CommandLine text description
-func (c CommandLine) GetText() string {
-	return fmt.Sprintf("%d %s %s", c.command.key, CHAR_SEPARATOR, c.text)
-}
-
-// Returns CommandLine text length
-func (c CommandLine) GetLength() int {
-	return len(c.GetText())
-}
-
-// Returns CommandLine text alignment
-func (c CommandLine) GetAlignment() TextAlignment {
-	return c.align
-}
-
-// Returns CommandLine key
-func (c CommandLine) GetKey() int {
-	return c.command.key
-}
-
-/************************************/
-/* SEPARATOR LINE RELATED FUNCTIONS */
-/************************************/
-
-// Returns LineType LINETYPE_SEPARATOR
-func (s SeparatorLine) GetType() LineType {
-	return LINETYPE_SEPARATOR
-}
-
-// Returns a single separator character
-func (s SeparatorLine) GetText() string {
-	return CHAR_HLINE
-}
-
-// Returns 1 (length of a single char)
-func (s SeparatorLine) GetLength() int {
-	return 1
-}
-
-// Returns TXTALIGN_CENTER, Separtor line will always fill the width of the menu
-func (s SeparatorLine) GetAlignment() TextAlignment {
-	return TXTALIGN_CENTER
-}
-
-/********************************/
-/* EMPTY LINE RELATED FUNCTIONS */
-/********************************/
-
-// Returns LineType LINETYPE_EMPTY
-func (e EmptyLine) GetType() LineType {
-	return LINETYPE_EMPTY
-}
-
-// Returns a single space character
-func (e EmptyLine) GetText() string {
-	return CHAR_EMPTY
-}
-
-// Returns 1 (length of a single char)
-func (e EmptyLine) GetLength() int {
-	return 1
-}
-
-// Returns TXTALIGN_CENTER, empty line will always fill the width of the menu
-func (e EmptyLine) GetAlignment() TextAlignment {
-	return TXTALIGN_CENTER
+func (l MenuLine) GetLength() int {
+	return len(l.text)
 }

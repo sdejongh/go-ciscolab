@@ -39,7 +39,7 @@ func main() {
 		fmt.Println("P1R1 is at", l.GetDeviceByName("P1R1"))
 	*/
 
-	m := menu.NewMenu("CiscoLab v3.0alpha - GO version", menu.BORDER, 2, 1, 1, 2)
+	m := menu.NewMenu("CiscoLab v3.0alpha - GO version", "Your choice: ", menu.BORDER, 2, 1, 0, 2)
 	m.SetWidth(50)
 	m.AddTextLine("Left Aligned commands", menu.TXTALIGN_LEFT)
 	m.AddEmptyLine()

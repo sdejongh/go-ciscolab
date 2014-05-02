@@ -92,6 +92,7 @@ type Menu struct {
 func NewMenu(title string, border bool, padding_x int, padding_y int, margin_x int, margin_y int) *Menu {
 	menu := Menu{width: 0, border: border, padding_x: padding_x, padding_y: padding_y, margin_x: margin_x, margin_y: margin_y}
 	menu.SetTitle(title)
+	menu.commands = make(map[int]CommandLine)
 	return &menu
 }
 
@@ -245,7 +246,7 @@ func (m *Menu) AddEmptyLine() {
 // Add a command line to the Menu
 func (m *Menu) AddCommandLine(key int, text string, command func(), align TextAlignment) {
 	newcmd := MenuCommand{key: key, f: command}
-	newline := CommandLine{text: text, command: newcmd}
+	newline := CommandLine{text: text, command: newcmd, align: align}
 	m.content = append(m.content, newline)
 	m.commands[key] = newline
 }
@@ -309,7 +310,7 @@ func (c CommandLine) GetType() LineType {
 
 // Returns CommandLine text description
 func (c CommandLine) GetText() string {
-	return fmt.Sprintf("%d %q %s", c.command.key, CHAR_SEPARATOR, c.text)
+	return fmt.Sprintf("%d %s %s", c.command.key, CHAR_SEPARATOR, c.text)
 }
 
 // Returns CommandLine text length

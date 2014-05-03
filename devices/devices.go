@@ -17,7 +17,6 @@ type DeviceType int
 // Generic Device Interface
 type Devicer interface {
 	GetName() string
-	SetName(name string)
 	GetType() DeviceType
 }
 

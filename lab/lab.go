@@ -6,14 +6,19 @@ type/functions/... related to general management
 package lab
 
 import (
+	"ciscolab/config"
 	"ciscolab/devices"
+	"ciscolab/menu"
 	"ciscolab/utilities"
 	"sort"
+	"strconv"
+	"strings"
 )
 
 // Lab structure, contains slices for devices and comservers
 type Lab struct {
-	devices map[string]devices.Devicer
+	devices  map[string]devices.Devicer
+	mainMenu menu.Menu
 }
 
 // Lab type constructor
@@ -22,11 +27,25 @@ func NewLab() *Lab {
 	return &Lab{devices: devices}
 }
 
-// Add ComServer's and/or LabDevice's to the lab
-func (l *Lab) AddDevice(devicers ...devices.Devicer) {
-	for _, device := range devicers {
-		l.devices[device.GetName()] = device
+// Build lab from package "config"
+func (l *Lab) BuildFromPackage() {
+	for csName, csInfos := range config.ComServers {
+		arrInfos := strings.Split(csInfos, ":")
+		ipAddress := arrInfos[0]
+		telnetPort, _ := strconv.Atoi(arrInfos[1])
+		l.AddDevice(devices.NewComServer(csName, uint16(telnetPort), ipAddress))
 	}
+	for dName, dInfos := range config.LabDevices {
+		arrInfos := strings.Split(dInfos, ":")
+		comserver := l.GetDeviceByName(arrInfos[0])
+		line, _ := strconv.Atoi(arrInfos[1])
+		l.AddDevice(devices.NewLabDevice(dName, int16(line), comserver.(*devices.ComServer)))
+	}
+}
+
+// Add ComServer's and/or LabDevice's to the lab
+func (l *Lab) AddDevice(devicer devices.Devicer) {
+	l.devices[devicer.GetName()] = devicer
 }
 
 // Remove ComServer or LabDevice from Lab (by name)
@@ -73,5 +92,12 @@ func (l Lab) IsDeviceInLab(name string) bool {
 // Returns the ptr for the given device name
 func (l Lab) GetDeviceByName(name string) devices.Devicer {
 	device, _ := l.devices[name]
+	/*switch device.GetType() {
+	case devices.LABDEVICE:
+		device = device.(devices.LabDevice)
+	case devices.COMSERVER:
+		device = device.(devices.ComServer)
+
+	}*/
 	return device
 }
